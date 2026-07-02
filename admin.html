@@ -13,9 +13,13 @@
             <h1 style="margin:0; color:var(--text-primary); display:inline-block;">DATABASE CONTROL INTERFACE</h1>
             <button id="logoutBtn" style="width:auto; float:right; padding:5px 15px; font-size:11px; margin:0;">[
                 DISCONNECT ]</button>
-            <button onclick="alert('Welcome to BCA')" style="width:auto; float:right; padding:5px 15px; font-size:11px; margin:0 10px 0 0;">[ SHOW WELCOME ]</button>
+            
+            <button onclick="showWelcomeMessage()" style="width:auto; float:right; padding:5px 15px; font-size:11px; margin:0 10px 0 0;">[ SHOW WELCOME ]</button>
             <div style="clear:both;"></div>
         </div>
+
+        <div id="welcomeDisplay" style="text-align: center; margin-bottom: 20px;"></div>
+
         <div class="grid" id="studentGrid"></div>
     </div>
 
@@ -52,6 +56,36 @@
 
         onAuthStateChanged(auth, (user) => { if (!user) window.location.href = 'login.html'; });
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+        // Inline CSS Keyframes injected for the entry animation
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes cyberFadeIn {
+                from { opacity: 0; transform: translateY(-10px); filter: blur(4px); }
+                to { opacity: 1; transform: translateY(0); filter: blur(0); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Logic to inject the animated element on click
+        window.showWelcomeMessage = function() {
+            const displayZone = document.getElementById('welcomeDisplay');
+            displayZone.innerHTML = `
+                <div style="
+                    display: inline-block;
+                    padding: 15px 40px; 
+                    font-size: 20px; 
+                    font-weight: bold; 
+                    color: var(--text-primary, #fff); 
+                    border: 1px dashed var(--text-primary, #fff);
+                    background: rgba(0,0,0,0.2);
+                    letter-spacing: 2px;
+                    animation: cyberFadeIn 0.5s ease-out forwards;
+                ">
+                    >> WELCOME TO BCA
+                </div>
+            `;
+        };
 
         // Real-Time Live Read Loop
         const q = query(collection(db, "students"), orderBy("submittedAt", "desc"));
