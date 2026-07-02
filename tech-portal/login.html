@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MAINFRAME GATE CHECK</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="interface-panel">
+        <h2>KERNEL LOGIN ACCESS</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>ADMIN EMAIL //</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label>SECURE ACCESS CODE //</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit">DECRYPT DASHBOARD</button>
+
+            <p style="font-size:11px; color:#666; text-align:center; margin-top:15px;">
+                Need terminal credentials? <a href="signup.html"
+                    style="color:var(--text-primary); text-decoration:none;">[ REQUEST AUTHORIZATION ]</a>
+            </p>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCp3dBa-uCbNI5G4Z7Za3HE0rdvIHEAGOM",
+            authDomain: "cyber-student-portal.firebaseapp.com",
+            projectId: "cyber-student-portal",
+            storageBucket: "cyber-student-portal.firebasestorage.app",
+            messagingSenderId: "561179092577",
+            appId: "1:561179092577:web:8d5050b538eb3b2d8e6c20"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
+                window.location.href = 'admin.html';
+            } catch (err) {
+                alert("ACCESS DENIED: Credentials mismatch.");
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CENTRAL ADMINISTRATIVE PANEL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <div style="border-bottom: 2px solid var(--text-primary); padding-bottom:15px; margin-bottom:30px;">
+            <h1 style="margin:0; color:var(--text-primary); display:inline-block;">DATABASE CONTROL INTERFACE</h1>
+            <button id="logoutBtn" style="width:auto; float:right; padding:5px 15px; font-size:11px; margin:0;">[
+                DISCONNECT ]</button>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="grid" id="studentGrid"></div>
+    </div>
+
+    <div class="modal" id="editModal">
+        <div class="interface-panel">
+            <h2>UPDATE ATTRIBUTE RECORDS</h2>
+            <input type="hidden" id="editId">
+            <div class="form-group"><label>NAME</label><input type="text" id="editName"></div>
+            <div class="form-group"><label>CLASS</label><input type="text" id="editClass"></div>
+            <div class="form-group"><label>DIVISION</label><input type="text" id="editDiv"></div>
+            <div class="form-group"><label>ROLL NO</label><input type="text" id="editRoll"></div>
+            <button onclick="commitUpdate()">COMMIT MODIFICATIONS</button>
+            <button onclick="closeModal()" style="border-color:#666; color:#666;">ABORT SEQUENCE</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCp3dBa-uCbNI5G4Z7Za3HE0rdvIHEAGOM",
+            authDomain: "cyber-student-portal.firebaseapp.com",
+            projectId: "cyber-student-portal",
+            storageBucket: "cyber-student-portal.firebasestorage.app",
+            messagingSenderId: "561179092577",
+            appId: "1:561179092577:web:8d5050b538eb3b2d8e6c20"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = 'login.html'; });
+        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+        // Real-Time Live Read Loop
+        const q = query(collection(db, "students"), orderBy("submittedAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const grid = document.getElementById('studentGrid');
+            if (snapshot.empty) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color:#666; padding:40px;">>> ARCHIVE INDEX VACANT.</div>`;
+                return;
+            }
+            grid.innerHTML = snapshot.docs.map(docData => {
+                const s = docData.data();
+                return `
+                    <div class="student-card">
+                        <img src="${s.imagePath}" class="student-photo">
+                        <div class="data-row"><span class="data-label">NAME:</span> ${s.name}</div>
+                        <div class="data-row"><span class="data-label">CLASS:</span> ${s.class}</div>
+                        <div class="data-row"><span class="data-label">DIV:</span> ${s.division}</div>
+                        <div class="data-row"><span class="data-label">ROLL NO:</span> ${s.rollNo}</div>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="openEditor('${docData.id}', '${s.name}', '${s.class}', '${s.division}', '${s.rollNo}')" style="font-size:11px; padding:6px;">[ EDIT ]</button>
+                            <button onclick="purgeRow('${docData.id}')" style="font-size:11px; padding:6px; border-color:var(--accent-glow); color:var(--accent-glow);">[ DELETE ]</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        });
+
+        // Open Modal and Populate Fields
+        window.openEditor = function (id, name, cls, div, roll) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editClass').value = cls;
+            document.getElementById('editDiv').value = div;
+            document.getElementById('editRoll').value = roll;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        window.closeModal = function () { document.getElementById('editModal').style.display = 'none'; }
+
+        // Update Document in Firestore
+        window.commitUpdate = async function () {
+            const id = document.getElementById('editId').value;
+            const docRef = doc(db, "students", id);
+            await updateDoc(docRef, {
+                name: document.getElementById('editName').value,
+                class: document.getElementById('editClass').value,
+                division: document.getElementById('editDiv').value,
+                rollNo: document.getElementById('editRoll').value
+            });
+            closeModal();
+        }
+
+        // Delete Document from Firestore
+        window.purgeRow = async function (id) {
+            if (confirm("Expunge target index configuration profile safely from cloud registry?")) {
+                await deleteDoc(doc(db, "students", id));
+            }
+        }
+    </script>
+</body>
+
+</html>

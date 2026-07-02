@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STUDENT ENROLLMENT CORE</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CINEMATIC INTRO VIDEO CONTAINER OVERLAY */
+        #videoContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #06060a;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.6s ease;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #skipBtn {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: auto;
+            padding: 10px 20px;
+            background: rgba(18, 18, 26, 0.8);
+            z-index: 10000;
+        }
+
+        /* Prevent form layout panel from appearing until the intro breaks */
+        .interface-panel {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            display: none;
+        }
+
+        .interface-panel.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="videoContainer">
+        <video id="introVideo" autoplay muted playsinline>
+            <source src="assets/intro.mp4" type="video/mp4">
+            SYSTEM MAINFRAME INITIALIZING...
+        </video>
+        <button id="skipBtn">[ SKIP SYSTEM INTRO ]</button>
+    </div>
+
+    <div class="interface-panel" id="mainPanel">
+        <a href="login.html" style="float: right; color: var(--accent-glow); text-decoration: none; font-size: 11px; letter-spacing: 1px; border: 1px dashed var(--accent-glow); padding: 4px 8px; border-radius: 3px;">
+            [ ADMIN ACCESS ]
+        </a>
+        <div style="clear: both; margin-bottom: 15px;"></div>
+
+        <h2>STUDENT REGISTRATION FORM</h2>
+        <form id="regForm">
+            <div class="form-group">
+                <label>NAME //</label>
+                <input type="text" id="name" required autocomplete="off">
+            </div>
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div><label>CLASS //</label><input type="text" id="class" required></div>
+                <div><label>DIV //</label><input type="text" id="division" required></div>
+            </div>
+            <div class="form-group">
+                <label>ROLL NO //</label>
+                <input type="text" id="rollNo" required autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>BIOMETRIC PROFILE PHOTO //</label>
+                <input type="file" id="image" accept="image/*" required>
+            </div>
+            <button type="submit" id="subBtn">EXECUTE REGISTRATION SEQUENCE</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+        // Verified working project environment configurations
+        const firebaseConfig = {
+            apiKey: "AIzaSyCp3dBa-uCbNI5G4Z7Za3HE0rdvIHEAGOM",
+            authDomain: "cyber-student-portal.firebaseapp.com",
+            projectId: "cyber-student-portal",
+            storageBucket: "cyber-student-portal.firebasestorage.app",
+            messagingSenderId: "561179092577",
+            appId: "1:561179092577:web:8d5050b538eb3b2d8e6c20"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- Video Management Gate Logic ---
+        const videoContainer = document.getElementById('videoContainer');
+        const introVideo = document.getElementById('introVideo');
+        const mainPanel = document.getElementById('mainPanel');
+        const skipBtn = document.getElementById('skipBtn');
+
+        function breakIntroSequence() {
+            videoContainer.style.opacity = '0';
+            setTimeout(() => {
+                videoContainer.style.display = 'none';
+                mainPanel.classList.add('active');
+            }, 600);
+        }
+
+        // Trigger transition if video ends normally or user hits skip
+        introVideo.addEventListener('ended', breakIntroSequence);
+        skipBtn.addEventListener('click', breakIntroSequence);
+
+        // --- Helper Code Function: Local Base64 File Conversion Processing ---
+        function convertToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // --- Cloud Form Transmission System Logic ---
+        document.getElementById('regForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('subBtn');
+            btn.innerText = "TRANSMITTING DATA...";
+            btn.disabled = true;
+
+            const file = document.getElementById('image').files[0];
+            try {
+                // 1. Convert binary photo input data stream safely into text formatting
+                const base64Photo = await convertToBase64(file);
+
+                // 2. Transmit formatted schema record down straight to Firestore database (bypasses storage CORS checks completely)
+                await addDoc(collection(db, "students"), {
+                    name: document.getElementById('name').value,
+                    class: document.getElementById('class').value,
+                    division: document.getElementById('division').value,
+                    rollNo: document.getElementById('rollNo').value,
+                    imagePath: base64Photo, // Text-based image injection profile
+                    submittedAt: new Date().toISOString()
+                });
+
+                alert("Profile synchronized successfully with the cloud infrastructure.");
+                this.reset();
+            } catch (err) {
+                alert("CRITICAL ERROR: " + err.message);
+            } finally {
+                btn.innerText = "EXECUTE REGISTRATION SEQUENCE";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

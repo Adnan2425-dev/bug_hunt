@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ADMIN SIGNUP CORE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="tech-bg">
+    <div class="interface-panel">
+        <h2>CREATE CO-ORDINATOR ACCOUNT</h2>
+        <form id="signupForm" style="margin-top:20px;">
+            <div class="form-group">
+                <label>ADMIN EMAIL //</label>
+                <input type="email" id="email" required placeholder="name@domain.com">
+            </div>
+            <div class="form-group">
+                <label>CHOOSE SECURE ACCESS CODE //</label>
+                <input type="password" id="password" required minlength="6" placeholder="Min 6 characters">
+            </div>
+            <button type="submit">REGISTER TO CLOUD TERMINAL</button>
+            <p style="font-size:11px; color:#666; text-align:center; margin-top:15px;">
+                Already authorized? <a href="login.html" style="color:var(--text-primary); text-decoration:none;">[
+                    RETURN TO LOGIN ]</a>
+            </p>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCp3dBa-uCbNI5G4Z7Za3HE0rdvIHEAGOM",
+            authDomain: "cyber-student-portal.firebaseapp.com",
+            projectId: "cyber-student-portal",
+            storageBucket: "cyber-student-portal.firebasestorage.app",
+            messagingSenderId: "561179092577",
+            appId: "1:561179092577:web:8d5050b538eb3b2d8e6c20"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+
+            try {
+                // Creates account straight into Firebase Authentication console list
+                await createUserWithEmailAndPassword(auth, email, pass);
+                alert("CREATION SUCCESSFUL: Admin authorization profile generated.");
+                window.location.href = 'admin.html'; // Sends them directly into the interface
+            } catch (err) {
+                alert("SIGNUP REJECTED: " + err.message);
+            }
+        });
+    </script>
+</body>
+
+</html>
